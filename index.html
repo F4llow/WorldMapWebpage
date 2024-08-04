@@ -19,20 +19,36 @@
         .country:hover {
             fill: #ffcc00;
         }
-        #countryName {
+        #textboxes {
             position: absolute;
             top: 10px;
             right: 10px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .textbox {
+            width: 300px;
             padding: 5px;
             border: 1px solid #ccc;
             font-size: 14px;
+        }
+        #postPayload {
+            height: 20em; /* 20 lines */
+        }
+        #postResponse {
+            height: calc(100vh - 50px - 20em - 20px - 3 * 10px); /* Remaining space */
         }
     </style>
 </head>
 <body>
     <h1>Interactive World Map</h1>
     <div id="map"></div>
-    <input type="text" id="countryName" readonly>
+    <div id="textboxes">
+        <input type="text" id="countryName" class="textbox" readonly placeholder="Country Name">
+        <textarea id="postPayload" class="textbox" readonly placeholder="POST Request Payload"></textarea>
+        <textarea id="postResponse" class="textbox" readonly placeholder="POST Request Response"></textarea>
+    </div>
     <script>
         // Define the width and height of the SVG element
         const width = 960;
@@ -68,8 +84,54 @@
         // Function to handle country click
         function handleCountryClick(countryName) {
             document.getElementById("countryName").value = countryName;
+
+            const payload = {
+                query: "",
+                sources: [],
+                countries: [countryName],
+                topics: [],
+                keywords: [],
+                Update_timestamp: ["2024-08-02 07:01:53", "2024-08-04 07:01:53"],
+                links: [],
+                tracker_type: [],
+                cluster: true,
+                set_size: 10,
+                get_biggest: false,
+                get_last_update: true,
+                page_rank: false
+            };
+
+            document.getElementById("postPayload").value = JSON.stringify(payload, null, 2);
+
+            fetch('https://fopotracking.ue.r.appspot.com/search', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'accept': 'application/json, text/plain, */*',
+                    'accept-encoding': 'gzip, deflate, br, zstd',
+                    'accept-language': 'en-US,en;q=0.8',
+                    'origin': 'https://verbaai.org',
+                    'referer': 'https://verbaai.org/',
+                    'sec-ch-ua': '"Not)A;Brand";v="99", "Brave";v="127", "Chromium";v="127"',
+                    'sec-ch-ua-mobile': '?1',
+                    'sec-ch-ua-platform': '"Android"',
+                    'sec-fetch-dest': 'empty',
+                    'sec-fetch-mode': 'cors',
+                    'sec-fetch-site': 'cross-site',
+                    'sec-gpc': '1',
+                    'user-agent': 'Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/127.0.0.0 Mobile Safari/537.36'
+                },
+                body: JSON.stringify(payload)
+            })
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById("postResponse").value = JSON.stringify(data, null, 2);
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                document.getElementById("postResponse").value = 'Error: ' + error;
+            });
         }
     </script>
 </body>
 </html>
-
